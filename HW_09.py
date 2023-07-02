@@ -60,17 +60,24 @@ def input_error(func):
     return inner
 
 
-# Декоратор для Збереження бази даних у файл
-def dec_save_phoneDB(func):
-    def inner(path):
-        return func(path)   
-    return inner 
- 
- 
- # Декоратор для Завантаження бази даних із файлу
-def dec_load_phoneDB(func):
-    def inner(path):
-        return func(path)
+# Декоратор для Додавання нової людини у базу
+def dec_func_add(func):
+    def inner(prm):
+        return func(prm)
+    return inner
+
+
+# Декоратор для Друкування всієї бази даних
+def dec_func_all_phone(func):
+    def inner(_):
+        return func(_)
+    return inner
+
+
+# Декоратор для Внесення змін у базу даних
+def dec_func_change(func):
+    def inner(prm):
+        return func(prm)
     return inner
 
 
@@ -87,35 +94,29 @@ def dec_func_greeting(func):
         return func(_)
     return inner
  
- 
-# Декоратор для Додавання нової людини у базу
-def dec_func_add(func):
-    def inner(prm):
-        return func(prm)
-    return inner
 
-
-# Декоратор для Внесення змін у базу даних
-def dec_func_change(func):
-    def inner(prm):
-        return func(prm)
-    return inner
- 
- 
- # Декоратор для Знайденя телефону за Ім'ям особи
+# Декоратор для Знайденя телефону за Ім'ям особи
 def dec_func_phone(func):
     def inner(prm):
         return func(prm)
     return inner
+ 
 
-
-# Декоратор для Друкування всієї бази даних
-def dec_func_all_phone(func):
-    def inner(_):
-        return func(_)
+ # Декоратор для Завантаження бази даних із файлу
+def dec_load_phoneDB(func):
+    def inner(path):
+        return func(path)
     return inner
 
 
+# Декоратор для Збереження бази даних у файл
+def dec_save_phoneDB(func):
+    def inner(path):
+        return func(path)   
+    return inner 
+ 
+ 
+# Функція викликає оброботчик команд
 @input_error 
 def run_handler(handler, cmd, prm):
     if cmd in ["add", "change", "phone"]:
@@ -253,7 +254,7 @@ def func_all_phone(_)->str:
     else: return result
 
 
-# Рахує кількість параметрів
+# Рахує та повертає кількість параметрів
 def get_count_prm(prm):
     if len(prm) > 0: 
         count_prm = prm.count(" ", 0, -1) + 1
