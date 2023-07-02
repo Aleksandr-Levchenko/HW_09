@@ -11,17 +11,15 @@
 
 from pathlib import Path
 import os
-import platform # для clearscrean()
+import platform  # для clearscrean()
 
 persons = {}   # "name": "0975634583"
-
+path = Path("D:\Git\HW_09\database_09.csv")
 
 
 # Головна функція роботи CLI(Command Line Interface - консольного скрипту)  
 def main():
     cmd = ""
-    
-    path = Path("D:\Git\HW_09\database_09.csv")
     
     # головний цикл обробки команд користувача
     while True:
@@ -33,86 +31,131 @@ def main():
         cmd, prm = parcer_commands(cmd)
         
         # 3. Отримуємо handler_functions тобто ДІЮ
-        handler = get_handler(cmd)
-        
+        if cmd: handler = get_handler(cmd)
+        else: 
+            print("Command was not recognized")
+            continue
+            
         # 4. Визначемо параметри для handler() 
         #    та виконаємо Команду користувача
-        run_handler(handler)
-        
-        if cmd in ["add", "change", "phone"]:
-            print(handler(prm))
-        elif cmd in ["close", "exit", "good bye"]:
-            print(handler(""))
+        if run_handler(handler, cmd, prm) == "Good bye!":
+            print("Good bye!")
             break
-        elif cmd in ["save", "load"]:
-            handler(path)            
-        elif cmd in ["show all", "hello"]:
-            print(handler(""))
-            
-            
-            
-# Повертає адресу функції, що обробляє команду користувача
-def get_handler(operator):
-    return OPERATIONS[operator]        
- 
-
+        
+        
+        
 # Декоратор для Обробки командної строки
 def input_error(func):
-    def inner(cmd_line):
-        result = func(cmd_line)
-        return result
-    return inner
- 
- 
-@input_error 
-def run_handler(handler):
-    pass
-    
-     
-def clear_screen():
-    os_name = platform.system().lower()
-    
-    if os_name == 'windows':
-        os.system('cls')
-    elif os_name == 'linux' or os_name == 'darwin':
-        os.system('clear')
-
-
-# Декоратор для Завантаження бази даних із файлу
-def dec_load_phoneDB(func):
-    def inner(path):
-        print(func(path))
-    return inner
+    def inner(handler, cmd, prm):
+        try:
+            result = func(handler, cmd, prm)
+            if not result == "Good bye!": print(result) 
+            else: return result
         
-         
-#=========================================================
-# Функція читає базу даних з файлу
-#========================================================= 
-@dec_load_phoneDB
-def load_phoneDB(path):
-    try:
-        with open(path, "r") as f_read:
-            while True:                
-                line = f_read.readline()
-                if not line:
-                    break
-                if line[-1] == "\n":
-                    line = line[:-1]
-                pos = line.find(":")
-                persons[line[:pos]] = line[pos+1:]
-        return f"The database has been loaded = {len(persons)} records"
-    except FileNotFoundError: return "The database isn't found."
+        # Обробка виключних ситуацій
+        except FileNotFoundError:    # Файл бази даних Відсутній
+            print("The database isn't found")
+        except ValueError:
+            print("Incorect data or unsupported format while writing to the file")
+        except KeyError:
+            print("Record isn't in the database")
+    return inner
 
 
 # Декоратор для Збереження бази даних у файл
 def dec_save_phoneDB(func):
     def inner(path):
-        print(func(path))
+        return func(path)   # print(func(path))
+    return inner 
+ 
+ 
+ # Декоратор для Завантаження бази даних із файлу
+def dec_load_phoneDB(func):
+    def inner(path):
+        return func(path)
     return inner
 
 
+# Декоратор для Завершення роботи      
+def dec_func_exit(func):
+    def inner(_):
+        return func(_)  
+    return inner
+
+
+# Декоратор для команди Вітання      
+def dec_func_greeting(func):
+    def inner(_):
+        return func(_)
+    return inner
+ 
+ 
+# Декоратор для Додавання нової людини у базу
+def dec_func_add(func):
+    def inner(prm):
+        return func(prm)
+    return inner
+
+
+# Декоратор для Внесення змін у базу даних
+def dec_func_change(func):
+    def inner(prm):
+        return func(prm)
+    return inner
+ 
+ 
+ # Декоратор для Знайденя телефону за Ім'ям особи
+def dec_func_phone(func):
+    def inner(prm):
+        return func(prm)
+    return inner
+
+
+# Декоратор для Друкування всієї бази даних
+def dec_func_all_phone(func):
+    def inner(_):
+        return func(_)
+    return inner
+
+
+# -------------------------------------------- 
+@input_error 
+def run_handler(handler, cmd, prm):
+    if cmd in ["add", "change", "phone"]:
+        result = handler(prm)
+    elif cmd in ["close", "exit", "good bye"]:
+        result = handler("")
+    elif cmd in ["save", "load"]:
+        result = handler(path)            
+    elif cmd in ["show all", "hello"]:
+        result = handler("")
+    return result
+     
+     
+# Повертає адресу функції, що обробляє команду користувача
+def get_handler(operator):
+    return OPERATIONS[operator]    
+
+
 #=========================================================
-# Функція виконує збереження бази даних у файл *.csv
+# Функція читає базу даних з файлу - ОК
+#========================================================= 
+@dec_load_phoneDB
+def load_phoneDB(path):
+    with open(path, "r") as f_read:
+        while True:                
+            line = f_read.readline()
+            if not line:
+                break
+            if line[-1] == "\n":
+                line = line[:-1]
+            pos = line.find(":")
+            persons[line[:pos]] = line[pos+1:]
+    return f"The database has been loaded = {len(persons)} records"
+    
+    
+#=========================================================
+# Функція виконує збереження бази даних у файл *.csv - OK
 #========================================================= 
 @dec_save_phoneDB
 def save_phoneDB(path):
@@ -120,13 +163,6 @@ def save_phoneDB(path):
         f_out.write("\n".join([":".join([person, value]) for person, value in persons.items()]))
     return f"The database is saved = {len(persons)} records"  
        
-       
-# Декоратор для Завершення роботи      
-def dec_func_exit(func):
-    def inner():
-        print(func())
-    return inner
-    
     
 #=========================================================
 # >> "good bye", "close", "exit"
@@ -138,13 +174,6 @@ def func_exit(_):
     return "Good bye!"
 
 
-# Декоратор для команди Вітання      
-def dec_func_greeting(func):
-    def inner():
-        print(func())
-    return inner
-
-
 #=========================================================
 # >> hello
 # Отвечает в консоль "How can I help you?"
@@ -154,12 +183,6 @@ def func_greeting(_):
     return "How can I help you?"
 
 
-# Декоратор для Додавання нової людини у базу
-def dec_func_add(func):
-    def inner(prm):
-        print(func(prm))
-    return inner
-    
 #=========================================================
 # >> add ...  
 # По этой команде бот сохраняет в памяти (в словаре например) новый контакт. 
@@ -167,23 +190,21 @@ def dec_func_add(func):
 #=========================================================
 @dec_func_add
 def func_add(prm):
-    if prm and len(prm) > 2:
+    
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+        
+    if prm and (count_prm >= 2):
         # Якщо ключ (ІМ'Я) що користувач хоче ДОДАТИ не ІСНУЄ тобто можемо додавати
-        if not prm.partition(" ")[0] in persons:
-            persons[prm.partition(" ")[0]] = prm.partition(" ")[2]    # Додаємо нову людину
+        if not prm.partition(" ")[0].capitalize() in persons:
+            persons[prm.partition(" ")[0].capitalize()] = prm.partition(" ")[2]    # Додаємо нову людину
+            return "1 record was successfully added"
         else: return "Person is already in database"  # Повернемо помилку -> "Неможливо дадати існуючу людину"
     else:
-        return "Expected 2 parameters >> add name phone"
-    return ""
+        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add Name 0499587612"
+    
 
 
-# Декоратор для Внесення змін у базу даних
-def dec_func_change(func):
-    def inner(prm):
-        print(func(prm))
-    return inner
-    
-    
 #=========================================================
 # >> change ...
 # По этой команде бот сохраняет в памяти новый номер телефона 
@@ -191,34 +212,36 @@ def dec_func_change(func):
 # Вместо ... пользователь вводит Имя и Номер телефона, 
 # Внимание: обязательно через пробел!!!
 #=========================================================
-@dec_func_change
+@dec_func_change  
 def func_change(prm):
-    persons[prm.partition(" ")[0]] = prm.partition(" ")[2]
-    return f"Records for {prm.partition(' ')[0]} is changed"
-
-
-# Декоратор для Знайденя телефону за Ім'ям особи
-def dec_func_phone(func):
-    def inner(prm):
-        print(func(prm))
-    return inner
-
+    
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+    
+    if prm and (count_prm >= 2):
+        name = prm.partition(" ")[0].lower().capitalize()
+        # Якщо ключ (ІМ'Я) що користувач хоче ЗМІНИТИ ІСНУЄ, тобто можемо Змінювати
+        if  name in persons:
+            persons[name] = prm.partition(" ")[2]
+            return f"Record for {name} was successfully changed"
+        else:
+            return f"The record wasn't found in the database"
+    else: 
+        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> change Name 0499587612"
+    
 
 #=========================================================
 # >> phone ...
 # По этой команде бот выводит в консоль номер телефона для указанного контакта.
-# Вместо ... пользователь вводит имя контакта, чей номер нужно показать.
+# Вместо ... пользователь вводит Имя контакта, чей номер нужно показать.
 #=========================================================
 @dec_func_phone
 def func_phone(prm):
-    return persons[prm]
-
-
-# Декоратор для Друкування всієї бази даних
-def dec_func_all_phone(func):
-    def inner():
-        print(func())
-    return inner
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+    
+    if prm: return persons[prm.partition(" ")[0].capitalize()]
+    else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
 
 
 #=========================================================
@@ -228,16 +251,22 @@ def dec_func_all_phone(func):
 #=========================================================
 @dec_func_all_phone
 def func_all_phone(_)->str:
-    return "\n".join([f"{person} - {persons[person]}" for person in persons])
+    result =  "\n".join([f"{person} - {persons[person]}" for person in persons])
+    if result == "": return "The database is empty"
+    else: return result
 
 
+# Рахує кількість параметрів
+def get_count_prm(prm):
+    if len(prm) > 0: 
+        count_prm = prm.count(" ", 0, -1) + 1
+    else: count_prm = 0
+    return count_prm
 
-    
 
 #=========================================================
 # Функція виконує парсер команд та відповідних параметрів
 #=========================================================
-@input_error
 def parcer_commands(cmd_line):
     lst, tmp, cmd, prm  = [[], [], "", ""]
     
@@ -249,7 +278,7 @@ def parcer_commands(cmd_line):
             cmd = f"{tmp[0]} {tmp[1]}".lower()
             
         # перевіремо ОДИНАРНУ команду
-        elif tmp[0] in COMMANDS:
+        elif tmp[0].lower() in COMMANDS:
             cmd = tmp[0].lower()
             prm = cmd_line.partition(" ")[2]
     return cmd, prm
