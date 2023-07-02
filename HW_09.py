@@ -4,9 +4,7 @@
  - находить номер телефона по имени,
  - изменять записанный номер телефона,
  - выводить в консоль все записи, которые сохранил. 
- 
- Чтобы реализовать такую несложную логику, воспользуемся словарем. 
- В словаре будем хранить имя пользователя как ключ и номер телефона как значение.
+
 '''
 
 from pathlib import Path
@@ -65,7 +63,7 @@ def input_error(func):
 # Декоратор для Збереження бази даних у файл
 def dec_save_phoneDB(func):
     def inner(path):
-        return func(path)   # print(func(path))
+        return func(path)   
     return inner 
  
  
@@ -118,7 +116,6 @@ def dec_func_all_phone(func):
     return inner
 
 
-# -------------------------------------------- 
 @input_error 
 def run_handler(handler, cmd, prm):
     if cmd in ["add", "change", "phone"]:
@@ -296,12 +293,6 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "save": save_phoneDB,
               "load": load_phoneDB}
 
-# OPERATIONS = {func_exit : ["good bye", "close", "exit"],
-#               func_greeting : ["hello"],
-#               func_add : ["add"],
-#               func_change : ["change"],
-#               func_phone : ["phone"],
-#               func_all_phone : ["show all"]}
         
 if __name__ == "__main__":
     main()
