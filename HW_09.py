@@ -136,6 +136,98 @@ def get_handler(operator):
 
 
 #=========================================================
+# >> add ...  
+# По этой команде бот сохраняет в памяти (в словаре например) новый контакт. 
+# Вместо ... пользователь вводит ИМЯ и НОМЕР телефона, обязательно через пробел.
+#=========================================================
+@dec_func_add
+def func_add(prm):
+    
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+        
+    if prm and (count_prm >= 2):
+        # Якщо ключ (ІМ'Я) що користувач хоче ДОДАТИ не ІСНУЄ тобто можемо додавати
+        if not prm.partition(" ")[0].capitalize() in persons:
+            persons[prm.partition(" ")[0].capitalize()] = prm.partition(" ")[2]    # Додаємо нову людину
+            return "1 record was successfully added"
+        else: return "Person is already in database"  # Повернемо помилку -> "Неможливо дадати існуючу людину"
+    else:
+        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add Name 0499587612"
+     
+
+#=========================================================
+# >> show all
+# По этой команде бот выводит все сохраненные контакты 
+# с номерами телефонов в консоль.
+#=========================================================
+@dec_func_all_phone
+def func_all_phone(_)->str:
+    result =  "\n".join([f"{person} - {persons[person]}" for person in persons])
+    if result == "": return "The database is empty"
+    else: return result
+
+
+#=========================================================
+# >> change ...
+# По этой команде бот сохраняет в памяти новый номер телефона 
+# для существующего контакта. 
+# Вместо ... пользователь вводит Имя и Номер телефона, 
+# Внимание: обязательно через пробел!!!
+#=========================================================
+@dec_func_change  
+def func_change(prm):
+    
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+    
+    if prm and (count_prm >= 2):
+        name = prm.partition(" ")[0].lower().capitalize()
+        # Якщо ключ (ІМ'Я) що користувач хоче ЗМІНИТИ ІСНУЄ, тобто можемо Змінювати
+        if  name in persons:
+            persons[name] = prm.partition(" ")[2]
+            return f"Record for {name} was successfully changed"
+        else:
+            return f"The record wasn't found in the database"
+    else: 
+        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> change Name 0499587612"
+
+
+#=========================================================
+# >> "good bye", "close", "exit"
+# По любой из этих команд бот завершает свою роботу 
+# после того, как выведет в консоль "Good bye!".
+#=========================================================
+@dec_func_exit
+def func_exit(_):
+    return "Good bye!"
+
+
+#=========================================================
+# >> hello
+# Отвечает в консоль "How can I help you?"
+#=========================================================
+@dec_func_greeting
+def func_greeting(_):
+    return "How can I help you?"
+
+
+
+#=========================================================
+# >> phone ...
+# По этой команде бот выводит в консоль номер телефона для указанного контакта.
+# Вместо ... пользователь вводит Имя контакта, чей номер нужно показать.
+#=========================================================
+@dec_func_phone
+def func_phone(prm):
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+    
+    if prm: return persons[prm.partition(" ")[0].capitalize()]
+    else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
+
+
+#=========================================================
 # Функція читає базу даних з файлу - ОК
 #========================================================= 
 @dec_load_phoneDB
@@ -163,106 +255,6 @@ def save_phoneDB(path):
        
     
 #=========================================================
-# >> "good bye", "close", "exit"
-# По любой из этих команд бот завершает свою роботу 
-# после того, как выведет в консоль "Good bye!".
-#=========================================================
-@dec_func_exit
-def func_exit(_):
-    return "Good bye!"
-
-
-#=========================================================
-# >> hello
-# Отвечает в консоль "How can I help you?"
-#=========================================================
-@dec_func_greeting
-def func_greeting(_):
-    return "How can I help you?"
-
-
-#=========================================================
-# >> add ...  
-# По этой команде бот сохраняет в памяти (в словаре например) новый контакт. 
-# Вместо ... пользователь вводит ИМЯ и НОМЕР телефона, обязательно через пробел.
-#=========================================================
-@dec_func_add
-def func_add(prm):
-    
-    # порахуємо кількість параметрів
-    count_prm = get_count_prm(prm)
-        
-    if prm and (count_prm >= 2):
-        # Якщо ключ (ІМ'Я) що користувач хоче ДОДАТИ не ІСНУЄ тобто можемо додавати
-        if not prm.partition(" ")[0].capitalize() in persons:
-            persons[prm.partition(" ")[0].capitalize()] = prm.partition(" ")[2]    # Додаємо нову людину
-            return "1 record was successfully added"
-        else: return "Person is already in database"  # Повернемо помилку -> "Неможливо дадати існуючу людину"
-    else:
-        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add Name 0499587612"
-    
-
-
-#=========================================================
-# >> change ...
-# По этой команде бот сохраняет в памяти новый номер телефона 
-# для существующего контакта. 
-# Вместо ... пользователь вводит Имя и Номер телефона, 
-# Внимание: обязательно через пробел!!!
-#=========================================================
-@dec_func_change  
-def func_change(prm):
-    
-    # порахуємо кількість параметрів
-    count_prm = get_count_prm(prm)
-    
-    if prm and (count_prm >= 2):
-        name = prm.partition(" ")[0].lower().capitalize()
-        # Якщо ключ (ІМ'Я) що користувач хоче ЗМІНИТИ ІСНУЄ, тобто можемо Змінювати
-        if  name in persons:
-            persons[name] = prm.partition(" ")[2]
-            return f"Record for {name} was successfully changed"
-        else:
-            return f"The record wasn't found in the database"
-    else: 
-        return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> change Name 0499587612"
-    
-
-#=========================================================
-# >> phone ...
-# По этой команде бот выводит в консоль номер телефона для указанного контакта.
-# Вместо ... пользователь вводит Имя контакта, чей номер нужно показать.
-#=========================================================
-@dec_func_phone
-def func_phone(prm):
-    # порахуємо кількість параметрів
-    count_prm = get_count_prm(prm)
-    
-    if prm: return persons[prm.partition(" ")[0].capitalize()]
-    else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
-
-
-#=========================================================
-# >> show all
-# По этой команде бот выводит все сохраненные контакты 
-# с номерами телефонов в консоль.
-#=========================================================
-@dec_func_all_phone
-def func_all_phone(_)->str:
-    result =  "\n".join([f"{person} - {persons[person]}" for person in persons])
-    if result == "": return "The database is empty"
-    else: return result
-
-
-# Рахує та повертає кількість параметрів
-def get_count_prm(prm):
-    if len(prm) > 0: 
-        count_prm = prm.count(" ", 0, -1) + 1
-    else: count_prm = 0
-    return count_prm
-
-
-#=========================================================
 # Функція виконує парсер команд та відповідних параметрів
 #=========================================================
 def parcer_commands(cmd_line):
@@ -280,6 +272,14 @@ def parcer_commands(cmd_line):
             cmd = tmp[0].lower()
             prm = cmd_line.partition(" ")[2]
     return cmd, prm
+
+
+# Рахує та повертає кількість параметрів
+def get_count_prm(prm):
+    if len(prm) > 0: 
+        count_prm = prm.count(" ", 0, -1) + 1
+    else: count_prm = 0
+    return count_prm
 
 
 COMMANDS = ["good bye", "close", "exit",
