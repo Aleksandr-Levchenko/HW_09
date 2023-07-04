@@ -8,8 +8,6 @@
 '''
 
 from pathlib import Path
-import os
-import platform  # для clearscrean()
 
 persons = {}   # "name": "0975634583"
 path = Path("D:\Git\HW_09\database_09.csv")
@@ -232,6 +230,7 @@ def func_phone(prm):
 #========================================================= 
 @dec_load_phoneDB
 def load_phoneDB(path):
+    persons.clear()
     with open(path, "r") as f_read:
         while True:                
             line = f_read.readline()
